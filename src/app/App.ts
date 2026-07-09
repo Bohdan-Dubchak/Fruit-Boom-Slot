@@ -3,9 +3,11 @@ import {GAME_CONFIG} from "../config/game.ts";
 import {ResolutionManager} from "../config/resolution.ts";
 import {Loader} from "../config/Loader.ts";
 import {GameScene} from "../scene/GameScene.ts";
+import {RNG} from "../game/engine/RNG.ts";
 
 export class App extends Application {
     private gameScene!: GameScene;
+    private rng!: RNG;
     async init(): Promise<void> {
         try {
             await super.init({
@@ -19,11 +21,15 @@ export class App extends Application {
             document.body.appendChild(this.canvas);
 
             await Loader.load(() => {});
-
-            this.gameScene = new GameScene();
-            this.stage.addChild(this.gameScene);
+            await this.startGame();
         } catch (error) {
             console.error('Failed to initialize game:', error);
         }
+    }
+
+    public async startGame(): Promise<void> {
+        this.rng = new RNG(Date.now());
+        this.gameScene = new GameScene(this.rng);
+        this.stage.addChild(this.gameScene);
     }
 }
