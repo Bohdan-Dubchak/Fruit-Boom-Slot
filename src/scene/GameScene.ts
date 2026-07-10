@@ -3,6 +3,7 @@ import {GAME_CONFIG} from "../config/game.ts";
 import {RNG} from "../game/engine/RNG.ts";
 import {WeightedSpinGenerator} from "../engine/WeightedSpinGenerator.ts";
 import {ReelsContainer} from "../reels/ReelsContainer.ts";
+import {UIFactory} from "../ui/UIFactory.ts";
 
 export class GameScene extends Container {
     private reelsContainer: ReelsContainer;
@@ -21,6 +22,8 @@ export class GameScene extends Container {
         this.createFrame('reels_frame');
 
         this.showInitialSymbols();
+
+        this.createUI();
 
     }
 
@@ -84,5 +87,16 @@ export class GameScene extends Container {
     private showInitialSymbols(): void {
         const matrix = this.spinGenerator.generateMatrix();
         this.reelsContainer.showInitial(matrix);
+    }
+
+    private createUI(): void {
+        const uiFactory = new UIFactory();
+        const { elements } = uiFactory.createGameUI(() => this.onSpinClick());
+
+        elements.forEach((el) => this.addChild(el));
+    }
+
+    private onSpinClick(): void {
+        console.log('Spin clicked!');
     }
 }
