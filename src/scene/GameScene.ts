@@ -4,10 +4,12 @@ import {RNG} from "../game/engine/RNG.ts";
 import {WeightedSpinGenerator} from "../engine/WeightedSpinGenerator.ts";
 import {ReelsContainer} from "../reels/ReelsContainer.ts";
 import {UIFactory} from "../ui/UIFactory.ts";
+import {SpinManager} from "../game/spin/spinManager.ts";
 
 export class GameScene extends Container {
     private reelsContainer: ReelsContainer;
     private readonly rng: RNG;
+    private spinManager!: SpinManager;
     private readonly spinGenerator: WeightedSpinGenerator;
 
     constructor(rng: RNG) {
@@ -22,7 +24,7 @@ export class GameScene extends Container {
         this.createFrame('reels_frame');
 
         this.showInitialSymbols();
-
+        this.spinManager = this.createSpinManager();
         this.createUI();
 
     }
@@ -64,9 +66,12 @@ export class GameScene extends Container {
 
         this.addChild(sprite);
     };
-    //@ts-ignore
-    private createSpinManager(): SpinManager {
 
+    private createSpinManager(): SpinManager {
+        return new SpinManager(
+            this.reelsContainer,
+            this.spinGenerator
+        )
     }
 
     private createReels(): ReelsContainer {
@@ -91,12 +96,24 @@ export class GameScene extends Container {
 
     private createUI(): void {
         const uiFactory = new UIFactory();
-        const { elements } = uiFactory.createGameUI(() => this.onSpinClick());
 
-        elements.forEach((el) => this.addChild(el));
+       const initialMatrix = this.spinGenerator.generateMatrix();
+       this.reelsContainer.showInitial(initialMatrix);
+
+       const {elements, spinButton} = uiFactory.createGameUI(
+           () => {
+               this.spinManager.executeSpin()
+           }
+       );
+
+       this.spinManager.setSpinCallbacks(
+           () => {
+               spinButton.setDisabled(true);
+           },
+           () => spinButton.setDisabled(false),
+       )
+
+       this.addChild(...elements)
     }
 
-    private onSpinClick(): void {
-        console.log('Spin clicked!');
-    }
 }
