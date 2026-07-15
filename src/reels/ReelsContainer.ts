@@ -3,10 +3,13 @@ import {GAME_CONFIG} from "../config/game.ts";
 import {RNG} from "../game/engine/RNG.ts";
 import {Reel} from "./Reel.ts";
 
+const ROW_STAGGER_MS = 0;
+
 export class ReelsContainer extends Container {
     private readonly reels: Reel[] = [];
     private reelCounter: number;
     private rng: RNG;
+    private isAnyDropping = false;
 
     constructor(reelCounter: number, rng: RNG) {
         super();
@@ -32,5 +35,44 @@ export class ReelsContainer extends Container {
                 reel.showSymbol(row, matrix[col][row]);
             }
         });
+    };
+
+    public async dropAll(matrix: string[][], onComplete: () => void): Promise<void> {
+        for (const reel of this.reels) {
+            reel.clearSymbols();
+        };
+
+        const rows = GAME_CONFIG.ROWS;
+
+        for (let row = 0; row < rows; row++) {
+            if (row > 0) {
+                await this.delay(ROW_STAGGER_MS);
+            }
+
+            const rowPromises = this.reels.map((reel, col) =>
+                reel.dropSymbol(row, matrix[col][row])
+            );
+
+            await Promise.all(rowPromises);
+        }
+
+        this.isAnyDropping = false;
+        onComplete();
+    }
+
+    public spinAll(matrix: string[][], onComplete: () => void): void {
+       this.dropAll(matrix, onComplete);
+    };
+
+    public stopAll(onAllStopped?: () => void): void {
+        onAllStopped?.();
+    };
+
+    public getIsAnySpinning(): boolean {
+        return this.isAnyDropping;
+    }
+
+    private delay(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 }
