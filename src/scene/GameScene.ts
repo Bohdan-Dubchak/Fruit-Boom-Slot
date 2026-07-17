@@ -5,9 +5,14 @@ import {WeightedSpinGenerator} from "../engine/WeightedSpinGenerator.ts";
 import {ReelsContainer} from "../reels/ReelsContainer.ts";
 import {UIFactory} from "../ui/UIFactory.ts";
 import {SpinManager} from "../game/spin/spinManager.ts";
+import {HUD} from "../ui/display/HUD.ts";
+import {WalletManager} from "../game/wallet/WalletManager.ts";
 
 export class GameScene extends Container {
     private reelsContainer: ReelsContainer;
+    //@ts-ignore
+    private hud!: HUD;
+    private readonly wallet: WalletManager;
     private readonly rng: RNG;
     private spinManager!: SpinManager;
     private readonly spinGenerator: WeightedSpinGenerator;
@@ -16,13 +21,13 @@ export class GameScene extends Container {
         super();
         this.rng = rng;
         this.spinGenerator = new WeightedSpinGenerator(this.rng);
-
+        this.wallet = new WalletManager(100);
         this.createBackground();
         this.createFrame('reels');
         this.createGameName();
         this.reelsContainer = this.createReels();
         this.createFrame('reels_frame');
-
+        this.hud = this.createHUD();
         this.showInitialSymbols();
         this.spinManager = this.createSpinManager();
         this.createUI();
@@ -67,10 +72,22 @@ export class GameScene extends Container {
         this.addChild(sprite);
     };
 
+    private createHUD(): HUD {
+        const hud = new HUD(
+        this.wallet.getBalance(),
+            this.wallet.getBet()
+        );
+
+        this.addChild(hud);
+
+        return hud;
+    };
+
+
     private createSpinManager(): SpinManager {
         return new SpinManager(
             this.reelsContainer,
-            this.spinGenerator
+            this.spinGenerator,
         )
     }
 
