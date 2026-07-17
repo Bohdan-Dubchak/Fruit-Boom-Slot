@@ -20,7 +20,6 @@ export class SpinManager {
         this.reelsContainer.spinAll(matrix, () => {
             this.onSpinEnd?.();
         });
-
         this.onSpinStart?.();
     }
 
