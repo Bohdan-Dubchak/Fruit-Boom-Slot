@@ -38,9 +38,11 @@ export class ReelsContainer extends Container {
     };
 
     public async dropAll(matrix: string[][], onComplete: () => void): Promise<void> {
+        this.isAnyDropping = true;
+
         for (const reel of this.reels) {
             reel.clearSymbols();
-        };
+        }
 
         const rows = GAME_CONFIG.ROWS;
 
