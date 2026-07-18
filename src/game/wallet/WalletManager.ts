@@ -37,7 +37,7 @@ export class WalletManager {
     };
 
     canSpin(): boolean {
-        return this.balance >= this.bet && this.bet >= Math.min(this.MIN_BET);
+        return this.balance >= this.bet && this.bet >= this.MIN_BET;
     };
 
     spendBet(): boolean {
