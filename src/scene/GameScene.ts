@@ -8,6 +8,7 @@ import {SpinManager} from "../game/spin/spinManager.ts";
 import {HUD} from "../ui/display/HUD.ts";
 import {WalletManager} from "../game/wallet/WalletManager.ts";
 import {BetManager} from "../game/bet/BetManager.ts";
+import {WinManager} from "../game/calculator/WinManager.ts";
 
 export class GameScene extends Container {
     private reelsContainer: ReelsContainer;
@@ -17,12 +18,14 @@ export class GameScene extends Container {
     private readonly rng: RNG;
     private spinManager!: SpinManager;
     private readonly spinGenerator: WeightedSpinGenerator;
+    private readonly winManager: WinManager;
 
     constructor(rng: RNG) {
         super();
         this.rng = rng;
         this.spinGenerator = new WeightedSpinGenerator(this.rng);
-        this.wallet = new WalletManager(100);
+        this.wallet = new WalletManager(100, 5, 1);
+        this.winManager = new WinManager();
         this.createBackground();
         this.createFrame('reels');
         this.createGameName();
@@ -98,10 +101,20 @@ export class GameScene extends Container {
             this.spinGenerator,
             this.wallet,
             this.betManager,
-            () => {
-                this.hud.updateBalance(this.wallet.getBalance());
-            }
-        )
+            (matrix) => {
+                console.table(matrix);
+                const {totalMultiplier } = this.winManager.checkWins(matrix);
+
+                if (totalMultiplier > 0) {
+                    const winAmount = totalMultiplier * this.wallet.getBet();
+                    console.log(`Win: ${winAmount}`);
+                    this.wallet.addWin(winAmount);
+                } else {
+                    console.log('No win');
+                }
+            },
+            () => this.hud.updateBalance(this.wallet.getBalance())
+        );
     }
 
     private createReels(): ReelsContainer {
@@ -153,6 +166,7 @@ export class GameScene extends Container {
     public override destroy(options?: any): void {
         this.betManager.destroy();
         this.reelsContainer.destroy();
+        this.removeChildren();
         super.destroy(options);
     }
 

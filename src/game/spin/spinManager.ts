@@ -12,6 +12,7 @@ export class SpinManager {
 
     private onSpinStart?: () => void;
     private onSpinEnd?: () => void;
+    private onWinCheck: (matrix: string[][]) => void;
     private onBalanceUpdate: () => void;
 
     constructor(
@@ -19,11 +20,13 @@ export class SpinManager {
                 spinGenerator: WeightedSpinGenerator,
                 wallet: WalletManager,
                 betManager: BetManager,
+                onWinCheck: (matrix: string[][]) => void,
                 onBalanceUpdate: () => void) {
         this.reelsContainer = reelsContainer;
         this.spinGenerator = spinGenerator;
         this.wallet = wallet;
         this.betManager = betManager;
+        this.onWinCheck = onWinCheck;
         this.onBalanceUpdate = onBalanceUpdate;
     };
 
@@ -42,6 +45,7 @@ export class SpinManager {
         const matrix = this.spinGenerator.generateMatrix();
 
         this.reelsContainer.spinAll(matrix, () => {
+            this.onWinCheck(matrix);
             this.onBalanceUpdate();
             this.betManager.setSpinning(false);
             this.onSpinEnd?.();
