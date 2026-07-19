@@ -6,7 +6,6 @@ import {RNG} from "../game/engine/RNG.ts";
 interface SymbolCell extends Container {
     symbolId: string;
     icon: Sprite;
-    animations: ReelAnimations;
 }
 
 const DROP_DURATION = 0.32;
@@ -48,15 +47,26 @@ export class Reel extends Container {
     private symbols: SymbolCell[] = [];
     private readonly symbolSize = GAME_CONFIG.SYMBOL_SIZE;
     private symbolsContainer: Container;
+    private animations: ReelAnimations;
 
     private droppingCells: DroppingEntry[] = [];
     private isDropping = false;
+
+    private isSpinning = false;
+    private spinStopping = false;
+    private spinSpeed = 0;
+    private readonly maxSpinSpeed = 4000;
+    private readonly spinAcceleration = 12000;
+    private readonly spinDeceleration = 16000;
+    private pendingStopCallback?: () => void;
 
     constructor(_rng: RNG) {
         super();
 
         this.symbolsContainer = new Container();
         this.addChild(this.symbolsContainer);
+
+        this.animations = new ReelAnimations(this.symbolsContainer);
     };
 
     public init(): void {
@@ -79,15 +89,13 @@ export class Reel extends Container {
             cell.icon = new Sprite();
             cell.addChild(cell.icon);
 
-            cell.animations = new ReelAnimations(cell);
-
             cell.symbolId = "";
             cell.y = DROP_FROM_OFFSET;
             cell.visible = false;
             this.symbols.push(cell);
             this.symbolsContainer.addChild(cell);
         }
-    }
+    };
 
     private applyIcon(cell: SymbolCell, id: string): void {
         const texture = Assets.get(id);
@@ -105,11 +113,51 @@ export class Reel extends Container {
             (this.symbolSize - cell.icon.width) / 2,
             (this.symbolSize - cell.icon.height) / 2
         );
-    }
+    };
 
     private resetCellScale(cell: SymbolCell): void {
         cell.scale.set(1, 1);
         cell.x = 0;
+    };
+
+    private flushPendingDrops(): void {
+        for (const entry of this.droppingCells) {
+            if (!entry.done) {
+                entry.done = true;
+                entry.resolve();
+            }
+        }
+        this.droppingCells = [];
+        this.isDropping = false;
+    };
+
+    private flushPendingStop(): void {
+        if (this.pendingStopCallback) {
+            const callback = this.pendingStopCallback;
+            this.pendingStopCallback = undefined;
+            callback();
+        }
+    };
+
+    public startSpin(): void {
+        this.flushPendingDrops();
+        this.flushPendingStop();
+
+        this.isSpinning = true;
+        this.spinStopping = false;
+        this.spinSpeed = 0;
+    };
+
+    public stopSpin(onComplete?: () => void): void {
+        if (!this.isSpinning) {
+            onComplete?.();
+            return;
+        }
+
+        this.flushPendingStop();
+
+        this.spinStopping = true;
+        this.pendingStopCallback = onComplete;
     }
 
     public dropSymbol(rowIndex: number, symbolId: string): Promise<void> {
@@ -133,7 +181,7 @@ export class Reel extends Container {
 
             this.isDropping = true;
         });
-    }
+    };
 
     public showSymbol(rowIndex: number, symbolId: string): void {
         const cell = this.symbols[rowIndex];
@@ -145,27 +193,62 @@ export class Reel extends Container {
     };
 
     public clearSymbols(): void {
+        this.flushPendingDrops();
+        this.flushPendingStop();
+
         for (const cell of this.symbols) {
             cell.visible = false;
             cell.y = DROP_FROM_OFFSET;
             this.resetCellScale(cell);
         }
-        this.droppingCells = [];
-        this.isDropping = false;
-    }
+
+        this.isSpinning = false;
+        this.spinStopping = false;
+        this.spinSpeed = 0;
+        this.animations.update(0, this.maxSpinSpeed);
+    };
 
     public getIsDropping(): boolean {
         return this.isDropping;
-    }
+    };
 
     public getIsSpinning(): boolean {
-        return this.isDropping;
-    }
+        return this.isDropping || this.isSpinning;
+    };
 
     private update(ticker: Ticker): void {
-        if (!this.isDropping) return;
-
         const ds = ticker.deltaMS / 1000;
+
+        if (this.isSpinning) {
+            this.updateSpin(ds);
+        }
+
+        if (this.isDropping) {
+            this.updateDrop(ds);
+        }
+    };
+
+    private updateSpin(ds: number): void {
+        if (this.spinStopping) {
+            this.spinSpeed = Math.max(this.spinSpeed - this.spinDeceleration * ds, 0);
+
+            if (this.spinSpeed <= 0) {
+                this.spinSpeed = 0;
+                this.isSpinning = false;
+                this.spinStopping = false;
+                this.animations.update(0, this.maxSpinSpeed);
+
+                this.flushPendingStop();
+                return;
+            }
+        } else {
+            this.spinSpeed = Math.min(this.spinSpeed + this.spinAcceleration * ds, this.maxSpinSpeed);
+        }
+
+        this.animations.update(this.spinSpeed, this.maxSpinSpeed);
+    };
+
+    private updateDrop(ds: number): void {
         let anyActive = false;
 
         for (const entry of this.droppingCells) {
@@ -193,10 +276,12 @@ export class Reel extends Container {
             this.droppingCells = [];
             this.isDropping = false;
         }
-    }
+    };
 
     public destroy(): void {
+        this.flushPendingDrops();
+        this.flushPendingStop();
         Ticker.shared.remove(this.update, this);
         super.destroy();
-    }
+    };
 }
