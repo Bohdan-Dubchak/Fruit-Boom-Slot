@@ -4,6 +4,7 @@ import {WalletManager} from "../wallet/WalletManager.ts";
 import {BetManager} from "../bet/BetManager.ts";
 
 export class SpinManager {
+    private isAutoSpinActive: boolean = false;
     private reelsContainer: ReelsContainer;
     private spinGenerator: WeightedSpinGenerator;
     private wallet: WalletManager;
@@ -28,10 +29,14 @@ export class SpinManager {
 
     public executeSpin(): void {
         if (this.reelsContainer.getIsAnySpinning()) return;
-        if (!this.wallet.canSpin()) return;
+        if (!this.wallet.canSpin()) {
+            this.stopAutoSpin();
+            return;
+        }
 
         this.betManager.setSpinning(true);
         this.wallet.spendBet();
+        this.onBalanceUpdate();
         this.onSpinStart?.();
 
         const matrix = this.spinGenerator.generateMatrix();
@@ -40,12 +45,27 @@ export class SpinManager {
             this.onBalanceUpdate();
             this.betManager.setSpinning(false);
             this.onSpinEnd?.();
+
+            if (this.isAutoSpinActive) {
+                setTimeout(() => this.executeSpin(), 800);
+            }
         });
 
+    }
+
+    public toggleAutoSpin(): void {
+        this.isAutoSpinActive = !this.isAutoSpinActive;
+        if (this.isAutoSpinActive) {
+            this.executeSpin();
+        }
+    }
+
+    public stopAutoSpin(): void {
+        this.isAutoSpinActive = false;
     }
 
     public setSpinCallbacks(onStart: () => void, onEnd: () => void): void {
         this.onSpinStart = onStart;
         this.onSpinEnd = onEnd;
-    }
+    };
 }

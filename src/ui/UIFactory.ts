@@ -1,5 +1,6 @@
 import {Container} from "pixi.js";
 import {SpinButton} from "./spinBtn/spinBtn.ts";
+import {AutoSpinBtn} from "./spinBtn/autoSpinBtn.ts";
 import {PlusBet} from "./button/plusButton.ts";
 import {MinusBet} from "./button/minusButton.ts";
 import {BetManager} from "../game/bet/BetManager.ts";
@@ -7,8 +8,10 @@ import {BetManager} from "../game/bet/BetManager.ts";
 export class UIFactory {
 
     createGameUI(onSpin: () => void,
-                 betManager: BetManager): { elements: Container[], spinButton: SpinButton } {
+                 onAutoSpin: () => void,
+                 betManager: BetManager): { elements: Container[], spinButton: SpinButton, autoSpin: AutoSpinBtn } {
         const spinButton = new SpinButton(onSpin);
+        const autoSpin = new AutoSpinBtn(onAutoSpin);
 
         const plusButton = new PlusBet();
         this.setupBetButton(plusButton,
@@ -23,8 +26,9 @@ export class UIFactory {
         );
 
         return {
-            elements: [spinButton, plusButton, minusButton],
-            spinButton
+            elements: [spinButton, autoSpin, plusButton, minusButton],
+            spinButton,
+            autoSpin
         }
     };
 
