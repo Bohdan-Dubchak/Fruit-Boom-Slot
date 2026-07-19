@@ -11,7 +11,6 @@ import {BetManager} from "../game/bet/BetManager.ts";
 
 export class GameScene extends Container {
     private reelsContainer: ReelsContainer;
-    //@ts-ignore
     private hud!: HUD;
     private readonly wallet: WalletManager;
     private betManager!: BetManager;
@@ -100,7 +99,7 @@ export class GameScene extends Container {
             this.wallet,
             this.betManager,
             () => {
-
+                this.hud.updateBalance(this.wallet.getBalance());
             }
         )
     }
@@ -136,7 +135,9 @@ export class GameScene extends Container {
                this.spinManager.executeSpin();
                    this.hud.updateBalance(this.wallet.getBalance())
            },
-           this.betManager
+           () => this.spinManager.toggleAutoSpin(),
+           this.betManager,
+
        );
 
        this.spinManager.setSpinCallbacks(
@@ -147,6 +148,12 @@ export class GameScene extends Container {
        )
 
        this.addChild(...elements)
+    };
+
+    public override destroy(options?: any): void {
+        this.betManager.destroy();
+        this.reelsContainer.destroy();
+        super.destroy(options);
     }
 
 }
