@@ -28,6 +28,12 @@ export class SpinButton extends Container {
         this.on('pointerup', this.onPointerUp, this);
         this.on('pointerupoutside', this.onPointerUp, this);
         this.on('pointertap', this.onTap, this);
+
+        window.addEventListener('keydown', (e) => {
+            if ((e.code === 'Space') && !e.repeat) {
+                this.onTap();
+            }
+        });
     };
 
     private onPointerDown(): void {
