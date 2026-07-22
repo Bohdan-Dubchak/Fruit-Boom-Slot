@@ -3,7 +3,7 @@ import {GAME_CONFIG} from "../config/game.ts";
 import {ReelAnimations} from "../animations/ReelAnimations.ts";
 import {RNG} from "../game/engine/RNG.ts";
 
-interface SymbolCell extends Container {
+export interface SymbolCell extends Container {
     symbolId: string;
     icon: Sprite;
 }
@@ -214,6 +214,10 @@ export class Reel extends Container {
 
     public getIsSpinning(): boolean {
         return this.isDropping || this.isSpinning;
+    };
+
+    public getSymbolCell(row: number): SymbolCell | undefined {
+        return this.symbols[row];
     };
 
     private update(ticker: Ticker): void {
