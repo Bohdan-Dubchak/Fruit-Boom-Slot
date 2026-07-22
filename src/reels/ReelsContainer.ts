@@ -2,6 +2,7 @@ import {Container} from "pixi.js";
 import {GAME_CONFIG} from "../config/game.ts";
 import {RNG} from "../game/engine/RNG.ts";
 import {Reel} from "./Reel.ts";
+import type {SymbolCell} from "./Reel.ts";
 
 const ROW_STAGGER_MS = 0;
 
@@ -60,10 +61,10 @@ export class ReelsContainer extends Container {
 
         this.isAnyDropping = false;
         onComplete();
-    }
+    };
 
     public spinAll(matrix: string[][], onComplete: () => void): void {
-       this.dropAll(matrix, onComplete);
+        this.dropAll(matrix, onComplete);
     };
 
     public stopAll(onAllStopped?: () => void): void {
@@ -72,9 +73,13 @@ export class ReelsContainer extends Container {
 
     public getIsAnySpinning(): boolean {
         return this.isAnyDropping;
-    }
+    };
+
+    public getSymbolCell(reel: number, row: number): SymbolCell | undefined {
+        return this.reels[reel]?.getSymbolCell(row);
+    };
 
     private delay(ms: number): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, ms));
-    }
+    };
 }
