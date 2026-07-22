@@ -9,6 +9,7 @@ import {HUD} from "../ui/display/HUD.ts";
 import {WalletManager} from "../game/wallet/WalletManager.ts";
 import {BetManager} from "../game/bet/BetManager.ts";
 import {WinManager} from "../game/calculator/WinManager.ts";
+import {WinHighlight} from "../game/win-animations/WinHighlight.ts";
 
 export class GameScene extends Container {
     private reelsContainer: ReelsContainer;
@@ -19,6 +20,7 @@ export class GameScene extends Container {
     private spinManager!: SpinManager;
     private readonly spinGenerator: WeightedSpinGenerator;
     private readonly winManager: WinManager;
+    private winHighlight!: WinHighlight;
 
     constructor(rng: RNG) {
         super();
@@ -30,6 +32,10 @@ export class GameScene extends Container {
         this.createFrame('reels');
         this.createGameName();
         this.reelsContainer = this.createReels();
+        this.winHighlight = new WinHighlight(
+            this.reelsContainer,
+            (reel, row) => this.reelsContainer.getSymbolCell(reel, row),
+        );
         this.createFrame('reels_frame');
         this.hud = this.createHUD();
         this.betManager = this.createBetManager();
@@ -79,7 +85,7 @@ export class GameScene extends Container {
 
     private createHUD(): HUD {
         const hud = new HUD(
-        this.wallet.getBalance(),
+            this.wallet.getBalance(),
             this.wallet.getBet()
         );
 
@@ -103,19 +109,21 @@ export class GameScene extends Container {
             this.betManager,
             (matrix) => {
                 console.table(matrix);
-                const {totalMultiplier } = this.winManager.checkWins(matrix);
+                const {wins, totalMultiplier } = this.winManager.checkWins(matrix);
 
                 if (totalMultiplier > 0) {
                     const winAmount = totalMultiplier * this.wallet.getBet();
                     console.log(`Win: ${winAmount}`);
                     this.wallet.addWin(winAmount);
+                    this.winHighlight.showWins(wins);
                 } else {
                     console.log('No win');
+                    this.winHighlight.clear();
                 }
             },
             () => this.hud.updateBalance(this.wallet.getBalance())
         );
-    }
+    };
 
     private createReels(): ReelsContainer {
         const reels = new ReelsContainer(GAME_CONFIG.REELS_COUNT, this.rng);
@@ -130,44 +138,45 @@ export class GameScene extends Container {
 
         this.addChild(reels);
         return reels;
-    }
+    };
 
     private showInitialSymbols(): void {
         const matrix = this.spinGenerator.generateMatrix();
         this.reelsContainer.showInitial(matrix);
-    }
+    };
 
     private createUI(): void {
         const uiFactory = new UIFactory();
 
-       const initialMatrix = this.spinGenerator.generateMatrix();
-       this.reelsContainer.showInitial(initialMatrix);
+        const initialMatrix = this.spinGenerator.generateMatrix();
+        this.reelsContainer.showInitial(initialMatrix);
 
-       const {elements, spinButton} = uiFactory.createGameUI(
-           () => {
-               this.spinManager.executeSpin();
-                   this.hud.updateBalance(this.wallet.getBalance())
-           },
-           () => this.spinManager.toggleAutoSpin(),
-           this.betManager,
+        const {elements, spinButton} = uiFactory.createGameUI(
+            () => {
+                this.spinManager.executeSpin();
+                this.hud.updateBalance(this.wallet.getBalance())
+            },
+            () => this.spinManager.toggleAutoSpin(),
+            this.betManager,
 
-       );
+        );
 
-       this.spinManager.setSpinCallbacks(
-           () => {
-               spinButton.setDisabled(true);
-           },
-           () => spinButton.setDisabled(false),
-       )
+        this.spinManager.setSpinCallbacks(
+            () => {
+                this.winHighlight.clear();
+                spinButton.setDisabled(true);
+            },
+            () => spinButton.setDisabled(false),
+        );
 
-       this.addChild(...elements)
+        this.addChild(...elements);
     };
 
     public override destroy(options?: any): void {
         this.betManager.destroy();
         this.reelsContainer.destroy();
+        this.winHighlight.clear();
         this.removeChildren();
         super.destroy(options);
     }
-
 }
