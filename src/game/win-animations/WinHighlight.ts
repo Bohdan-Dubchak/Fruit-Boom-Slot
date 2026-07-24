@@ -1,6 +1,9 @@
-import { Container, AnimatedSprite, Assets, Texture } from "pixi.js";
-import { GAME_CONFIG } from "../../config/game.ts";
-import type { WinLine } from "../calculator/WinManager.ts";
+import {Container, AnimatedSprite, Assets, Texture, type Sprite} from "pixi.js";
+import gsap from "gsap";
+import type {SymbolCell} from "../../reels/Reel.ts";
+import {GAME_CONFIG} from "../../config/game.ts";
+import type {WinLine} from "../calculator/WinManager.ts";
+import {symbolsAnimations} from "../../animations/SymbolsAnimations.ts";
 
 const ANIMATED_SYMBOLS: Record<string, number> = {
     'symbol_0':  28,
@@ -37,13 +40,14 @@ const FRONT_ANIM = {
 const SYMBOL_ANIM_ORIGINAL_SIZE = 128;
 const SYMBOL_ANIM_SPEED = 0.1;
 
-export type GetReelSymbolVisibility = (reel: number, row: number) => { visible: boolean } | undefined;
+export type GetReelSymbolVisibility = (reel: number, row: number) => SymbolCell | undefined;
 
 export class WinHighlight {
     private container: Container;
     private activeSprites: AnimatedSprite[] = [];
 
-    private hiddenSymbols: Array<{ visible: boolean }> = [];
+    private hiddenSymbols: SymbolCell[] = [];
+    private wobblingIcons: Sprite[] = [];
 
     private readonly getReelSymbol?: GetReelSymbolVisibility;
 
@@ -82,6 +86,13 @@ export class WinHighlight {
             symbol.visible = true;
         }
         this.hiddenSymbols = [];
+
+        for (const icon of this.wobblingIcons) {
+            gsap.killTweensOf(icon);
+            gsap.killTweensOf(icon.scale);
+            icon.rotation = 0;
+        }
+        this.wobblingIcons = [];
     };
 
     private highlightCell(reel: number, row: number, symbol: string): void {
@@ -102,6 +113,8 @@ export class WinHighlight {
             );
             return;
         }
+
+        this.wobbleReelSymbol(reel, row);
 
         if (BACK_ANIM.enabled) {
             this.addAnim(
@@ -130,11 +143,21 @@ export class WinHighlight {
     private hideReelSymbol(reel: number, row: number): void {
         if (!this.getReelSymbol) return;
 
-        const symbolSprite = this.getReelSymbol(reel, row);
-        if (!symbolSprite) return;
+        const symbolCell = this.getReelSymbol(reel, row);
+        if (!symbolCell) return;
 
-        symbolSprite.visible = false;
-        this.hiddenSymbols.push(symbolSprite);
+        symbolCell.visible = false;
+        this.hiddenSymbols.push(symbolCell);
+    };
+
+    private wobbleReelSymbol(reel: number, row: number): void {
+        if (!this.getReelSymbol) return;
+
+        const symbolCell = this.getReelSymbol(reel, row);
+        if (!symbolCell) return;
+
+        this.wobblingIcons.push(symbolCell.icon);
+        symbolsAnimations([symbolCell.icon]);
     };
 
     private addAnim(
