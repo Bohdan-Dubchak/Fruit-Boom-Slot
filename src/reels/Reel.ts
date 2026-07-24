@@ -87,6 +87,7 @@ export class Reel extends Container {
         for (let row = 0; row < GAME_CONFIG.ROWS; row++) {
             const cell = new Container() as SymbolCell;
             cell.icon = new Sprite();
+            cell.icon.anchor.set(0.5);
             cell.addChild(cell.icon);
 
             cell.symbolId = "";
@@ -109,9 +110,10 @@ export class Reel extends Container {
         );
 
         cell.icon.scale.set(scale);
+
         cell.icon.position.set(
-            (this.symbolSize - cell.icon.width) / 2,
-            (this.symbolSize - cell.icon.height) / 2
+            this.symbolSize / 2,
+            this.symbolSize / 2
         );
     };
 
