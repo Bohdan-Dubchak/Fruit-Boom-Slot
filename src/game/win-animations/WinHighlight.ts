@@ -1,9 +1,9 @@
-import { Container, AnimatedSprite, Assets, Texture, type Sprite } from "pixi.js";
+import {Container, AnimatedSprite, Assets, Texture, type Sprite} from "pixi.js";
 import gsap from "gsap";
 import type {SymbolCell} from "../../reels/Reel.ts";
-import { GAME_CONFIG } from "../../config/game.ts";
-import type { WinLine } from "../calculator/WinManager.ts";
-import { symbolsAnimations } from "../../animations/SymbolsAnimations.ts";
+import {GAME_CONFIG} from "../../config/game.ts";
+import type {WinLine} from "../calculator/WinManager.ts";
+import {symbolsAnimations} from "../../animations/SymbolsAnimations.ts";
 
 const ANIMATED_SYMBOLS: Record<string, number> = {
     'symbol_0':  28,
@@ -91,7 +91,6 @@ export class WinHighlight {
             gsap.killTweensOf(icon);
             gsap.killTweensOf(icon.scale);
             icon.rotation = 0;
-            // scale навмисно не скидаємо — Reel.applyIcon() перевиставить його самостійно
         }
         this.wobblingIcons = [];
     };
