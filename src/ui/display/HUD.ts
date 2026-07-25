@@ -1,12 +1,15 @@
-import {Container, Text, TextStyle, Sprite, Assets} from "pixi.js";
+import {Container, Text, TextStyle, Sprite, Graphics, Assets} from "pixi.js";
 import gsap from "gsap";
 
 export class HUD extends Container {
     private balanceValue!: Text;
     private betValue!: Text;
+    private border!: Graphics;
 
     constructor(balance: number, bet: number) {
         super();
+        this.createBorder(129, 625, 120, 50, 50);
+        this.createBorder(485, 625, 115, 50, 50);
         this.create(balance, bet);
         this.createMega();
     };
@@ -82,5 +85,15 @@ export class HUD extends Container {
         frames_2.position.set(830, 70);
 
         this.addChild(frames_1, frames_2);
-    }
+    };
+
+    private createBorder(x:number, y: number, w: number, h: number, r: number): void {
+        this.border = new Graphics();
+        this.border
+            .roundRect(x, y, w, h, r)
+            .fill({ color: 0xa6a6a6, alpha: 0.2 })
+            .stroke({color: 0x000000});
+
+        this.addChild(this.border);
+    };
 }
