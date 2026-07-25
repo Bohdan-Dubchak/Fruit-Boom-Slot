@@ -4,6 +4,8 @@ import {AutoSpinBtn} from "./spinBtn/autoSpinBtn.ts";
 import {PlusBet} from "./button/plusButton.ts";
 import {MinusBet} from "./button/minusButton.ts";
 import {BetManager} from "../game/bet/BetManager.ts";
+import {HomeButton} from "./button/homeButton.ts";
+import {SettingsButton} from "./button/settingsButton.ts";
 
 export class UIFactory {
 
@@ -12,6 +14,9 @@ export class UIFactory {
                  betManager: BetManager): { elements: Container[], spinButton: SpinButton, autoSpin: AutoSpinBtn } {
         const spinButton = new SpinButton(onSpin);
         const autoSpin = new AutoSpinBtn(onAutoSpin);
+
+        const homeBtn = new HomeButton('https://github.com/Bohdan-Dubchak/Fruit-Boom-Slot');
+        const infoBtn = new SettingsButton();
 
         const plusButton = new PlusBet();
         this.setupBetButton(plusButton,
@@ -26,7 +31,7 @@ export class UIFactory {
         );
 
         return {
-            elements: [spinButton, autoSpin, plusButton, minusButton],
+            elements: [spinButton, autoSpin, plusButton, minusButton, homeBtn, infoBtn],
             spinButton,
             autoSpin
         }
