@@ -92,7 +92,7 @@ export class HUD extends Container {
         this.border
             .roundRect(x, y, w, h, r)
             .fill({ color: 0xa6a6a6, alpha: 0.2 })
-            .stroke({color: 0x000000});
+            .stroke({color: 0xa6a6a6, alpha: 0});
 
         this.addChild(this.border);
     };
