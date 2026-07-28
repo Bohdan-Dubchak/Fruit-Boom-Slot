@@ -11,12 +11,13 @@ export class UIFactory {
 
     createGameUI(onSpin: () => void,
                  onAutoSpin: () => void,
-                 betManager: BetManager): { elements: Container[], spinButton: SpinButton, autoSpin: AutoSpinBtn } {
+                 betManager: BetManager,
+                 settings: () => void): { elements: Container[], spinButton: SpinButton, autoSpin: AutoSpinBtn } {
         const spinButton = new SpinButton(onSpin);
         const autoSpin = new AutoSpinBtn(onAutoSpin);
 
         const homeBtn = new HomeButton('https://github.com/Bohdan-Dubchak/Fruit-Boom-Slot');
-        const infoBtn = new SettingsButton();
+        const infoBtn = new SettingsButton(settings);
 
         const plusButton = new PlusBet();
         this.setupBetButton(plusButton,
@@ -41,5 +42,5 @@ export class UIFactory {
         button.on("pointerdown", onHold);
         button.on("pointerup", onRelease);
         button.on("pointerupoutside", onRelease);
-    }
+    };
 }
