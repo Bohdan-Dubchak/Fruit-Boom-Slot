@@ -6,7 +6,7 @@ export class SettingsButton extends Container {
     private originalScaleY: number;
     private bg: Sprite;
 
-    constructor() {
+    constructor(onClick: () => void) {
         super();
 
         this.eventMode = 'static';
@@ -28,11 +28,11 @@ export class SettingsButton extends Container {
 
         this.updateHitArea();
 
-        this.on('pointerdown', () => this.handleDown());
+        this.on('pointerdown', () => this.handleDown(onClick));
         this.on('pointerup', () => this.handleUp());
     };
 
-    private handleDown(): void {
+    private handleDown(onClick: () => void): void {
         gsap.killTweensOf(this.bg.scale);
 
         gsap.to(this.bg.scale, {
@@ -41,6 +41,8 @@ export class SettingsButton extends Container {
             duration: 0.08,
             ease: "power2.out"
         });
+
+        onClick();
     };
 
     private handleUp(): void {

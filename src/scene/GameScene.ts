@@ -10,6 +10,7 @@ import {WalletManager} from "../game/wallet/WalletManager.ts";
 import {BetManager} from "../game/bet/BetManager.ts";
 import {WinManager} from "../game/calculator/WinManager.ts";
 import {WinHighlight} from "../game/win-animations/WinHighlight.ts";
+import {SettingPanelManager} from "../managers/settingPanelManager.ts";
 
 export class GameScene extends Container {
     private reelsContainer: ReelsContainer;
@@ -21,6 +22,7 @@ export class GameScene extends Container {
     private readonly spinGenerator: WeightedSpinGenerator;
     private readonly winManager: WinManager;
     private winHighlight!: WinHighlight;
+    private settingsPanelManager: SettingPanelManager;
 
     constructor(rng: RNG) {
         super();
@@ -39,8 +41,12 @@ export class GameScene extends Container {
         this.createFrame('reels_frame');
         this.hud = this.createHUD();
         this.betManager = this.createBetManager();
-        this.showInitialSymbols();
         this.spinManager = this.createSpinManager();
+        this.settingsPanelManager = new SettingPanelManager(
+            GAME_CONFIG.WIDTH,
+            GAME_CONFIG.HEIGHT,
+            this
+        );
         this.createUI();
 
     }
@@ -140,11 +146,6 @@ export class GameScene extends Container {
         return reels;
     };
 
-    private showInitialSymbols(): void {
-        const matrix = this.spinGenerator.generateMatrix();
-        this.reelsContainer.showInitial(matrix);
-    };
-
     private createUI(): void {
         const uiFactory = new UIFactory();
 
@@ -158,7 +159,7 @@ export class GameScene extends Container {
             },
             () => this.spinManager.toggleAutoSpin(),
             this.betManager,
-
+            () => this.settingsPanelManager.show()
         );
 
         this.spinManager.setSpinCallbacks(
@@ -176,6 +177,7 @@ export class GameScene extends Container {
         this.betManager.destroy();
         this.reelsContainer.destroy();
         this.winHighlight.clear();
+        this.settingsPanelManager.destroy();
         this.removeChildren();
         super.destroy(options);
     }
