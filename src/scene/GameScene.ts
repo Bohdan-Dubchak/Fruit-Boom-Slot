@@ -11,6 +11,7 @@ import {BetManager} from "../game/bet/BetManager.ts";
 import {WinManager} from "../game/calculator/WinManager.ts";
 import {WinHighlight} from "../game/win-animations/WinHighlight.ts";
 import {SettingPanelManager} from "../managers/settingPanelManager.ts";
+import {JackpotDisplay} from "../ui/display/JackpotDisplay.ts";
 
 export class GameScene extends Container {
     private reelsContainer: ReelsContainer;
@@ -23,6 +24,7 @@ export class GameScene extends Container {
     private readonly winManager: WinManager;
     private winHighlight!: WinHighlight;
     private settingsPanelManager: SettingPanelManager;
+    private jackpotDisplay!: JackpotDisplay;
 
     constructor(rng: RNG) {
         super();
@@ -40,6 +42,11 @@ export class GameScene extends Container {
         );
         this.createFrame('reels_frame');
         this.hud = this.createHUD();
+
+        this.jackpotDisplay = new JackpotDisplay(1000, 100);
+        this.addChild(this.jackpotDisplay);
+        this.jackpotDisplay.updateBet(this.wallet.getBet());
+
         this.betManager = this.createBetManager();
         this.spinManager = this.createSpinManager();
         this.settingsPanelManager = new SettingPanelManager(
@@ -103,7 +110,10 @@ export class GameScene extends Container {
     private createBetManager(): BetManager {
         return new BetManager(
             this.wallet,
-            (bet) => this.hud.updateBet(bet)
+            (bet) => {
+                this.hud.updateBet(bet);
+                this.jackpotDisplay.updateBet(bet);
+            }
         );
     };
 
@@ -114,16 +124,13 @@ export class GameScene extends Container {
             this.wallet,
             this.betManager,
             (matrix) => {
-                console.table(matrix);
                 const {wins, totalMultiplier } = this.winManager.checkWins(matrix);
 
                 if (totalMultiplier > 0) {
                     const winAmount = totalMultiplier * this.wallet.getBet();
-                    console.log(`Win: ${winAmount}`);
                     this.wallet.addWin(winAmount);
                     this.winHighlight.showWins(wins);
                 } else {
-                    console.log('No win');
                     this.winHighlight.clear();
                 }
             },
@@ -178,6 +185,7 @@ export class GameScene extends Container {
         this.reelsContainer.destroy();
         this.winHighlight.clear();
         this.settingsPanelManager.destroy();
+        this.jackpotDisplay.destroy({ children: true });
         this.removeChildren();
         super.destroy(options);
     }
