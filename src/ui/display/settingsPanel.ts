@@ -3,13 +3,14 @@ import {SettingsManager} from "../../managers/settingsManager.ts";
 import {animatePressed} from "../utils/animatePress.ts";
 import {LanguageManager} from "../../managers/LanguageManager.ts";
 import type {Language} from "../../managers/translations.ts";
+import {SoundManager} from "../../audio/SoundManager.ts";
 
 export class SettingsPanel extends Container {
     private backdrop!: Graphics;
     private panel!: Container;
     private closeCallback?: () => void;
     private flagIcon!: Sprite;
-
+    private soundManager: SoundManager;
     private titleText!: Text;
     private musicLabel!: Text;
     private soundLabel!: Text;
@@ -18,8 +19,9 @@ export class SettingsPanel extends Container {
 
     private readonly languageChangeCallback = (_lang: Language) => this.updateTexts();
 
-    constructor(gameWidth: number, gameHeight: number) {
+    constructor(gameWidth: number, gameHeight: number, soundManager: SoundManager) {
         super();
+        this.soundManager = soundManager;
         this.createBackdrop(gameWidth, gameHeight);
         this.createPanel();
         this.createTitle();
@@ -87,8 +89,10 @@ export class SettingsPanel extends Container {
             'toggle_off_m',
             (isOn) => { SettingsManager.music = isOn; },
             false,
-            SettingsManager.music
+            SettingsManager.music,
         );
+
+            this.soundManager.play('settingsBtn');
 
         btn.position.set(40, -53);
         this.panel.addChild(btn)
@@ -116,6 +120,8 @@ export class SettingsPanel extends Container {
             true,
             SettingsManager.sound
         );
+
+        this.soundManager.play('settingsBtn')
 
         btn.setSize(40, 40);
         btn.position.set(40, 40);
@@ -158,6 +164,7 @@ export class SettingsPanel extends Container {
         btn.on('pointerdown', () => {
             const nextLang = LanguageManager.switchLanguage();
             this.flagIcon.texture = Assets.get(nextLang);
+            this.soundManager.play('settingsBtn');
         });
 
         return btn;
@@ -176,7 +183,7 @@ export class SettingsPanel extends Container {
         textureOff: string,
         callback: (isOn: boolean) => void,
         animate: boolean = false,
-        initialState: boolean = true
+        initialState: boolean = true,
     ): Container {
         const btn = new Container();
 
@@ -198,6 +205,7 @@ export class SettingsPanel extends Container {
             isOn = !isOn;
             bg.texture = Assets.get(isOn ? textureOn : textureOff);
             callback(isOn);
+            this.soundManager.play('settingsBtn')
         });
 
         return btn;
