@@ -12,6 +12,7 @@ import {WinManager} from "../game/calculator/WinManager.ts";
 import {WinHighlight} from "../game/win-animations/WinHighlight.ts";
 import {SettingPanelManager} from "../managers/settingPanelManager.ts";
 import {JackpotDisplay} from "../ui/display/JackpotDisplay.ts";
+import {SoundManager} from "../audio/SoundManager.ts";
 
 export class GameScene extends Container {
     private reelsContainer: ReelsContainer;
@@ -25,10 +26,12 @@ export class GameScene extends Container {
     private winHighlight!: WinHighlight;
     private settingsPanelManager: SettingPanelManager;
     private jackpotDisplay!: JackpotDisplay;
+    private soundManager: SoundManager;
 
-    constructor(rng: RNG) {
+    constructor(rng: RNG, soundManager: SoundManager) {
         super();
         this.rng = rng;
+        this.soundManager = soundManager;
         this.spinGenerator = new WeightedSpinGenerator(this.rng);
         this.wallet = new WalletManager(100, 5, 1);
         this.winManager = new WinManager();
@@ -52,7 +55,8 @@ export class GameScene extends Container {
         this.settingsPanelManager = new SettingPanelManager(
             GAME_CONFIG.WIDTH,
             GAME_CONFIG.HEIGHT,
-            this
+            this,
+            soundManager
         );
         this.createUI();
 
@@ -124,12 +128,18 @@ export class GameScene extends Container {
             this.wallet,
             this.betManager,
             (matrix) => {
-                const {wins, totalMultiplier } = this.winManager.checkWins(matrix);
+                const { wins, totalMultiplier } = this.winManager.checkWins(matrix);
 
-                if (totalMultiplier > 0) {
+                if (wins.length > 0 && totalMultiplier > 0) {
+
                     const winAmount = totalMultiplier * this.wallet.getBet();
                     this.wallet.addWin(winAmount);
                     this.winHighlight.showWins(wins);
+
+                    this.soundManager.play('win');
+                    if (winAmount > 500) {
+                        this.soundManager.play('bigWin');
+                    }
                 } else {
                     this.winHighlight.clear();
                 }
@@ -139,7 +149,7 @@ export class GameScene extends Container {
     };
 
     private createReels(): ReelsContainer {
-        const reels = new ReelsContainer(GAME_CONFIG.REELS_COUNT, this.rng);
+        const reels = new ReelsContainer(GAME_CONFIG.REELS_COUNT, this.rng, this.soundManager);
 
         const totalWidth =
             GAME_CONFIG.REELS_COUNT * GAME_CONFIG.SYMBOL_SIZE +
@@ -154,7 +164,7 @@ export class GameScene extends Container {
     };
 
     private createUI(): void {
-        const uiFactory = new UIFactory();
+        const uiFactory = new UIFactory(this.soundManager);
 
         const initialMatrix = this.spinGenerator.generateMatrix();
         this.reelsContainer.showInitial(initialMatrix);
@@ -183,6 +193,7 @@ export class GameScene extends Container {
     public override destroy(options?: any): void {
         this.betManager.destroy();
         this.reelsContainer.destroy();
+        this.soundManager.destroy();
         this.winHighlight.clear();
         this.settingsPanelManager.destroy();
         this.jackpotDisplay.destroy({ children: true });

@@ -1,4 +1,5 @@
 import {Container, Sprite, Assets} from "pixi.js";
+import {SoundManager} from "../../audio/SoundManager.ts";
 import gsap from "gsap";
 
 export class SpinButton extends Container {
@@ -7,10 +8,12 @@ export class SpinButton extends Container {
     private sprite: Sprite;
     private onClick: () => void;
     private disabled: boolean = false;
+    private soundManager: SoundManager;
 
-    constructor(onClick: () => void) {
+    constructor(onClick: () => void, soundManager: SoundManager) {
         super();
         this.onClick = onClick;
+        this.soundManager = soundManager;
 
         this.eventMode = "static";
         this.cursor = "pointer";
@@ -31,12 +34,14 @@ export class SpinButton extends Container {
 
         window.addEventListener('keydown', (e) => {
             if ((e.code === 'Space') && !e.repeat) {
+                this.soundManager.play('spin')
                 this.onTap();
             }
         });
     };
 
     private onPointerDown(): void {
+        this.soundManager.play('spin')
         if (this.disabled) return;
 
         this.sprite.texture = Assets.get('spin_pressed');

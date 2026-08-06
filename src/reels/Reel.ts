@@ -141,27 +141,6 @@ export class Reel extends Container {
         }
     };
 
-    public startSpin(): void {
-        this.flushPendingDrops();
-        this.flushPendingStop();
-
-        this.isSpinning = true;
-        this.spinStopping = false;
-        this.spinSpeed = 0;
-    };
-
-    public stopSpin(onComplete?: () => void): void {
-        if (!this.isSpinning) {
-            onComplete?.();
-            return;
-        }
-
-        this.flushPendingStop();
-
-        this.spinStopping = true;
-        this.pendingStopCallback = onComplete;
-    }
-
     public dropSymbol(rowIndex: number, symbolId: string): Promise<void> {
         return new Promise<void>((resolve) => {
             const cell = this.symbols[rowIndex];
@@ -208,14 +187,6 @@ export class Reel extends Container {
         this.spinStopping = false;
         this.spinSpeed = 0;
         this.animations.update(0, this.maxSpinSpeed);
-    };
-
-    public getIsDropping(): boolean {
-        return this.isDropping;
-    };
-
-    public getIsSpinning(): boolean {
-        return this.isDropping || this.isSpinning;
     };
 
     public getSymbolCell(row: number): SymbolCell | undefined {

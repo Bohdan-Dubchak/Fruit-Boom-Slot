@@ -1,13 +1,17 @@
 import {Assets, Container, Rectangle, Sprite,} from "pixi.js";
+import {SoundManager} from "../../audio/SoundManager.ts";
 import gsap from "gsap";
 
 export class MinusBet extends Container {
     private originalScaleX: number;
     private originalScaleY: number;
+    private soundManager: SoundManager;
     private bg: Sprite;
 
-    constructor() {
+    constructor(soundManager: SoundManager) {
         super();
+
+        this.soundManager = soundManager;
 
         this.eventMode = 'static';
         this.cursor = 'pointer';
@@ -32,6 +36,7 @@ export class MinusBet extends Container {
     };
 
     private handleDown(): void {
+        this.soundManager.play('bet');
         gsap.killTweensOf(this.bg.scale);
 
         gsap.to(this.bg.scale, {

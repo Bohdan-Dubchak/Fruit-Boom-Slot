@@ -1,15 +1,19 @@
 import {Assets, Container, Sprite} from "pixi.js";
+import {SoundManager} from "../../audio/SoundManager.ts";
 import gsap from "gsap";
 
 export class HomeButton extends Container {
     private originalScaleX: number;
     private originalScaleY: number;
     private readonly url: string;
+    private soundManager: SoundManager;
     private bg: Sprite;
 
-    constructor(url: string) {
+    constructor(url: string, soundManager: SoundManager) {
         super();
         this.url = url;
+
+       this.soundManager = soundManager;
 
         this.eventMode = "static";
         this.cursor = "pointer";
@@ -30,6 +34,7 @@ export class HomeButton extends Container {
     };
 
     private handleDown(): void {
+        this.soundManager.play('settingsBtn');
         gsap.killTweensOf(this.bg.scale);
 
         gsap.to(this.bg.scale, {

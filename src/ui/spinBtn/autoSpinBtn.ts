@@ -1,4 +1,5 @@
 import {Container, Sprite, Assets} from "pixi.js";
+import {SoundManager} from "../../audio/SoundManager.ts";
 import gsap from "gsap";
 
 export class AutoSpinBtn extends Container {
@@ -6,14 +7,15 @@ export class AutoSpinBtn extends Container {
     private originalScaleY: number;
     private sprite: Sprite;
     private onClick: () => void;
-
+    private soundManager: SoundManager;
     private disabled: boolean = false;
     private isActive: boolean = false;
 
-    constructor(onClick: () => void) {
+    constructor(onClick: () => void, soundManager: SoundManager) {
         super();
 
         this.onClick = onClick;
+        this.soundManager = soundManager;
 
         this.eventMode = "static";
         this.cursor = "pointer";
@@ -34,6 +36,7 @@ export class AutoSpinBtn extends Container {
     };
 
     private onPointerDown(): void {
+        this.soundManager.play('autoSpin')
         if (this.disabled) return;
 
         this.sprite.texture = Assets.get('auto_play_selected');

@@ -3,6 +3,7 @@ import {GAME_CONFIG} from "../config/game.ts";
 import {RNG} from "../game/engine/RNG.ts";
 import {Reel} from "./Reel.ts";
 import type {SymbolCell} from "./Reel.ts";
+import {SoundManager} from "../audio/SoundManager.ts";
 
 const ROW_STAGGER_MS = 0;
 
@@ -11,11 +12,14 @@ export class ReelsContainer extends Container {
     private reelCounter: number;
     private rng: RNG;
     private isAnyDropping = false;
+    private soundManager: SoundManager;
+    private externalOnReelStop?: () => void;
 
-    constructor(reelCounter: number, rng: RNG) {
+    constructor(reelCounter: number, rng: RNG, soundManager: SoundManager) {
         super();
 
         this.reelCounter = reelCounter;
+        this.soundManager = soundManager;
         this.rng = rng;
         this.createReel();
     };
@@ -52,8 +56,15 @@ export class ReelsContainer extends Container {
                 await this.delay(ROW_STAGGER_MS);
             }
 
+            const isLastRow = row === rows - 1;
+
             const rowPromises = this.reels.map((reel, col) =>
-                reel.dropSymbol(row, matrix[col][row])
+                reel.dropSymbol(row, matrix[col][row]).then(() => {
+                    if (isLastRow) {
+                        this.soundManager.play('reelStop');
+                        this.externalOnReelStop?.();
+                    }
+                })
             );
 
             await Promise.all(rowPromises);
@@ -67,10 +78,6 @@ export class ReelsContainer extends Container {
         this.dropAll(matrix, onComplete);
     };
 
-    public stopAll(onAllStopped?: () => void): void {
-        onAllStopped?.();
-    };
-
     public getIsAnySpinning(): boolean {
         return this.isAnyDropping;
     };
@@ -81,5 +88,13 @@ export class ReelsContainer extends Container {
 
     private delay(ms: number): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, ms));
+    };
+
+    public destroy(): void {
+        for (const reel of this.reels) {
+            reel.destroy();
+        }
+        this.reels.length = 0;
+        super.destroy();
     };
 }
