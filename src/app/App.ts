@@ -16,7 +16,7 @@ export class App extends Application {
             await super.init({
                 width: GAME_CONFIG.WIDTH,
                 height: GAME_CONFIG.HEIGHT,
-                resolution: ResolutionManager.getOptimalResolution(),
+                resolution: ResolutionManager.getAdaptiveResolution(),
                 autoDensity: true,
                 backgroundColor: '#000000'
             });
