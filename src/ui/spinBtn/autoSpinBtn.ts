@@ -83,17 +83,4 @@ export class AutoSpinBtn extends Container {
             ease: "back.out(4)"
         });
     };
-
-    public setDisabled(value: boolean): void {
-        this.disabled = value;
-        this.alpha = value ? 0.5 : 1;
-        this.cursor = value ? 'default' : 'pointer';
-
-        this.sprite.texture = Assets.get(this.isActive ? 'auto_play_selected' : 'auto_play');
-    }
-
-    public setActive(value: boolean): void {
-        this.isActive = value;
-        this.sprite.texture = Assets.get(this.isActive ? 'auto_play_selected' : 'auto_play');
-    }
 }
