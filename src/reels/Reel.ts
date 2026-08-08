@@ -78,7 +78,7 @@ export class Reel extends Container {
     private createMask(): void {
         const mask = new Graphics();
         mask.rect(0, 0, this.symbolSize, this.symbolSize * GAME_CONFIG.ROWS);
-        mask.fill(0xffffff);
+        mask.fill('#ffffff');
         this.addChild(mask);
         this.symbolsContainer.mask = mask;
     };
