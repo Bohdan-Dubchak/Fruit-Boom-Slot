@@ -2,7 +2,7 @@ import {Howl} from 'howler';
 
 export class SoundManager {
     private sounds: Map<string, Howl> = new Map();
-    private musicVolume: number = 0.3;
+    private musicVolume: number = 0.2;
     private sfxVolume: number = 0.8;
     private muted : boolean = false;
     private musicEnabled: boolean = true;
@@ -13,7 +13,7 @@ export class SoundManager {
 
     private loadSounds(): void {
         this.sounds.set("music", new Howl({
-            src: ['/audio/game.ogg'],
+            src: ['/audio/audio.ogg'],
             loop: true,
             volume: this.musicVolume
         }));
@@ -55,11 +55,12 @@ export class SoundManager {
     };
 
     public play(soundName: string): void {
-        if (!this.muted) {
-            const sound = this.sounds.get(soundName);
-            if (sound && !sound.playing()) {
-                sound.play();
-            }
+        if (this.muted) return;
+        if (soundName === 'music' && !this.musicEnabled) return;
+
+        const sound = this.sounds.get(soundName);
+        if (sound && !sound.playing()) {
+            sound.play();
         }
     };
 
@@ -70,44 +71,16 @@ export class SoundManager {
         }
     };
 
+    public setMuted(muted: boolean): void {
+        this.muted = muted;
+        Howler.mute(muted);
+    };
+
     public stop(soundName: string): void {
         const sound = this.sounds.get(soundName);
         if (sound) {
             sound.stop();
         }
-    };
-
-    public toggleSound(): void {
-        this.muted = !this.muted;
-
-        if (this.muted) {
-            Howler.mute(true);
-        } else {
-            Howler.mute(false);
-        }
-    };
-
-    public toggleMusic(): boolean {
-        const music = this.sounds.get('music');
-        if (!music) return false;
-
-        if (music.playing()) {
-            music.stop();
-            this.musicEnabled = false;
-            return false;
-        } else {
-            music.play();
-            this.musicEnabled = true;
-            return true;
-        }
-    };
-
-    public isMusicPlaying(): boolean {
-        return this.sounds.get('music')?.playing() ?? false;
-    };
-
-    public isSoundMuted(): boolean {
-        return this.muted;
     };
 
     public destroy(): void {
