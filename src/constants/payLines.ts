@@ -10,9 +10,3 @@ export const payTable: Record<string, Record<number, number>> = {
     'symbol_18': { 3: 20, 4: 70, 5: 250 },
     'symbol_21': { 3: 5, 4: 15, 5: 50 },
 };
-
-export const payLines: number[][] = [
-    [0, 0, 0, 0, 0],
-    [1, 1, 1, 1, 1],
-    [2, 2, 2, 2, 2],
-];

@@ -10,5 +10,3 @@ export const SYMBOLS_IDS: Record<string, number> = {
     "symbol_18": 10,
     "symbol_21": 10
 };
-
-export const SYMBOLS_LIST: string[] = Object.keys(SYMBOLS_IDS);

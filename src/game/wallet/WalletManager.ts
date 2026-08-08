@@ -16,10 +16,6 @@ export class WalletManager {
         return this.bet;
     };
 
-    getMinBet(): number {
-        return this.MIN_BET;
-    };
-
     increaseBet(step = 1): void {
         this.bet += step;
         this.clampBet();
