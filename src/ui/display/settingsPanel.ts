@@ -87,12 +87,18 @@ export class SettingsPanel extends Container {
         const btn = this.createToggleBtn(
             'toggle_on_m',
             'toggle_off_m',
-            (isOn) => { SettingsManager.music = isOn; },
+            (isOn) => {
+                SettingsManager.music = isOn;
+
+                if (isOn) {
+                    this.soundManager.playMusic();
+                } else {
+                    this.soundManager.stop('music');
+                }
+            },
             false,
             SettingsManager.music,
         );
-
-            this.soundManager.play('settingsBtn');
 
         btn.position.set(40, -53);
         this.panel.addChild(btn)
@@ -116,12 +122,13 @@ export class SettingsPanel extends Container {
         const btn = this.createToggleBtn(
             'sound_2',
             'sound_1',
-            (isOn) => { SettingsManager.sound = isOn; },
+            (isOn) => {
+                SettingsManager.sound = isOn;
+                this.soundManager.setMuted(!isOn);
+            },
             true,
             SettingsManager.sound
         );
-
-        this.soundManager.play('settingsBtn')
 
         btn.setSize(40, 40);
         btn.position.set(40, 40);
