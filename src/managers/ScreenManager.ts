@@ -13,5 +13,5 @@ export class ScreenManager {
         }
 
         window.dispatchEvent(new Event('resize'));
-    }
+    };
 }
