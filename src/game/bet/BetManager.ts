@@ -47,18 +47,6 @@ export class BetManager {
         }, this.INTERVAL_DELAY);
     };
 
-    increaseBetOnce(): void {
-        if (this.isSpinning) return;
-        this.wallet.increaseBet();
-        this.onBetChange(this.wallet.getBet());
-    }
-
-    decreaseBetOnce(): void {
-        if (this.isSpinning) return;
-        this.wallet.decreaseBet();
-        this.onBetChange(this.wallet.getBet());
-    };
-
     stop(): void {
         if (this.interval) {
             clearInterval(this.interval);
@@ -68,5 +56,5 @@ export class BetManager {
 
     destroy(): void {
         this.stop();
-    }
+    };
 }
