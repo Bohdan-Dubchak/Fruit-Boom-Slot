@@ -4,6 +4,7 @@ import {animatePressed} from "../utils/animatePress.ts";
 import {LanguageManager} from "../../managers/LanguageManager.ts";
 import type {Language} from "../../managers/translations.ts";
 import {SoundManager} from "../../audio/SoundManager.ts";
+import {ScreenManager} from "../../managers/ScreenManager.ts";
 
 export class SettingsPanel extends Container {
     private backdrop!: Graphics;
@@ -27,7 +28,7 @@ export class SettingsPanel extends Container {
         this.createTitle();
         this.createMusicRow();
         this.createSoundRow();
-        this.createFullscreenRow();
+        this.createFullscreenRow(ScreenManager.toggleFullscreen);
 
         const flagBtn = this.createFlagButton();
         flagBtn.position.set(40, 220);
@@ -135,14 +136,14 @@ export class SettingsPanel extends Container {
         this.panel.addChild(btn);
     };
 
-    private createFullscreenRow(): void {
+    private createFullscreenRow(callback: () => void): void {
         this.fullscreenLabel = this.createLabel(LanguageManager.t('screen'), -120, 130);
         this.panel.addChild(this.fullscreenLabel);
 
         const btn = this.createToggleBtn(
             'fullscreen_off',
             'fullscreen_on',
-            (isOn) => { SettingsManager.fullscreen = isOn; },
+            (isOn) => { SettingsManager.fullscreen = isOn; callback()},
             true,
             SettingsManager.fullscreen
         );
