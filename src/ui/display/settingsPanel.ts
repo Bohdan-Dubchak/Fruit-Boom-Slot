@@ -60,7 +60,7 @@ export class SettingsPanel extends Container {
         const panelBg = new Graphics();
         panelBg.roundRect(-300, -180, 700, 500, 20);
         panelBg.fill({ color: 0x2a2a2a, alpha: 0.5 });
-        panelBg.stroke({ color: 0xffd700, width: 1 });
+        panelBg.stroke({ color: '#ffd700', width: 1 });
 
         this.panel.addChild(panelBg);
     };
@@ -71,7 +71,7 @@ export class SettingsPanel extends Container {
             style: {
                 fontFamily: 'Alpha',
                 fontSize: 32,
-                fill: 0xffd700,
+                fill: '#ffd700',
                 fontWeight: 'bold'
             }
         });
@@ -108,7 +108,7 @@ export class SettingsPanel extends Container {
     private createLabel(text: string, x: number, y: number): Text {
         const label = new Text({
             text,
-            style: { fontFamily: 'Alpha', fontSize: 25, fill: 0xffd700, fontWeight: 'bold' }
+            style: { fontFamily: 'Alpha', fontSize: 25, fill: '#ffd700', fontWeight: 'bold' }
         });
 
         label.anchor.set(0.5);
